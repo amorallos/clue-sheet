@@ -4,6 +4,10 @@ A simple, mobile-friendly detective sheet for the board game Clue / Cluedo, with
 
 Not intended to offer an advantage over those using the traditional paper sheets.
 
+You can access via web through GitHub Pages
+
+[https://amorallos.github.io/clue-sheet/](https://amorallos.github.io/clue-sheet/)
+
 ## Features
 
 - Four editions: Clue Classic, Clue 2016-2022, Clue 2023 and Clue Master
