@@ -4,6 +4,10 @@ A simple, mobile-friendly detective sheet for the board game Clue / Cluedo, with
 
 Not intended to offer an advantage over those using the traditional paper sheets.
 
+You can access via web through GitHub Pages
+
+[https://amorallos.github.io/clue-sheet/](https://amorallos.github.io/clue-sheet/)
+
 ## Features
 
 - Four editions: Clue Classic, Clue 2016-2022, Clue 2023 and Clue Master
@@ -36,30 +40,6 @@ There are two ways. Hosting the file (Option B) is more reliable, especially on 
 4. Add players and start marking the grid.
 
 Saved progress may not persist between visits when a page is opened from a local file, depending on your phone and browser. If your players disappear after you close the page, use Option B.
-
-#### Option B: Host it and add it to your home screen
-
-1. Host the file, for example on GitHub Pages (see above) or Netlify Drop, so you have a web address.
-2. Open that address on your phone.
-3. Add it to your home screen:
-   - **iPhone (Safari):** tap the Share button, then **Add to Home Screen**, then **Add**.
-   - **Android (Chrome):** tap the **⋮** menu, then **Add to Home screen** (or **Install app**), then confirm.
-4. Open it from the new icon. It runs full screen like an app, and your progress is saved in that browser on your phone.
-
-### Hosting it on GitHub Pages
-
-This repository is ready for GitHub Pages: the app is `index.html` at the repo root, and `.nojekyll` tells GitHub to serve the files as they are.
-
-1. Create a new **public** repository on GitHub. As far as I know, free accounts can only use Pages on public repositories.
-2. Upload `index.html`, `README.md` and `.nojekyll` to the root of the repository (**Add file → Upload files**), then commit.
-3. Go to **Settings → Pages**.
-4. Under **Build and deployment**, set **Source** to **Deploy from a branch**, choose the `main` branch and the `/ (root)` folder, then click **Save**.
-5. Wait a minute or two. The site will be at `https://<your-username>.github.io/<repo-name>/`.
-6. Open that address on your phone and use **Add to Home Screen** (see "Using it on your phone" above).
-
-To update the app later, replace `index.html` in the repository and commit. The site redeploys automatically.
-
-You can also host the file on any other static host, such as Netlify or any web server.
 
 ## Usage
 
