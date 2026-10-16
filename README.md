@@ -19,14 +19,36 @@ Not intended to offer an advantage over those using the traditional paper sheets
 
 No installation is needed.
 
-1. Download `clue-sheet.html`.
+1. Download `index.html`.
 2. Open it in any modern browser (Chrome, Safari, Firefox, Edge).
 
-To use it on your phone, send the file to your device and open it in the browser. If you host the file somewhere, you can also use "Add to Home Screen" to open it like an app.
+### Using it on your phone
+
+There are two ways. Hosting the file (Option B) is more reliable, especially on iPhone.
+
+#### Option A: Open the downloaded file
+
+1. **Download** `index.html` to your phone, or download it on a computer and send it to your phone by AirDrop, email, a messaging app or a cloud drive (iCloud Drive, Google Drive, Dropbox).
+2. **Save it** to your phone's Files app (iPhone) or Downloads folder (Android).
+3. **Open it:**
+   - **Android:** open the Files or Downloads app, tap `index.html` and choose **Chrome** if asked.
+   - **iPhone:** open the Files app and tap `index.html`. If it shows as plain text or the buttons don't work, use Option B instead. iOS often can't run local HTML files properly.
+4. Add players and start marking the grid.
+
+Saved progress may not persist between visits when a page is opened from a local file, depending on your phone and browser. If your players disappear after you close the page, use Option B.
+
+#### Option B: Host it and add it to your home screen
+
+1. Host the file, for example on GitHub Pages (see above) or Netlify Drop, so you have a web address.
+2. Open that address on your phone.
+3. Add it to your home screen:
+   - **iPhone (Safari):** tap the Share button, then **Add to Home Screen**, then **Add**.
+   - **Android (Chrome):** tap the **⋮** menu, then **Add to Home screen** (or **Install app**), then confirm.
+4. Open it from the new icon. It runs full screen like an app, and your progress is saved in that browser on your phone.
 
 ### Hosting it yourself
 
-Because it is one static file, you can host it anywhere that serves HTML, such as GitHub Pages, Netlify or any web server. Rename the file to `index.html` if your host expects that.
+Because it is one static file, you can host it anywhere that serves HTML, such as GitHub Pages, Netlify or any web server. 
 
 ## Usage
 
