@@ -1,152 +1,674 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Clue Detective Sheet</title>
-<style>
-:root{--bg:#000;--fg:#ddd;--mut:#999;--ac:#ff9a1f;--line:#333;--sec:#161616;--cell:#0c0c0c;--yes:#4ade80;--no:#f87171;--maybe:#facc15;
-box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#fff;--fg:#222;--mut:#666;--ac:#c25e00;--line:#bbb;--sec:#eee;--cell:#fff;--yes:#15803d;--no:#b91c1c;--maybe:#a16207}}
-:root[data-theme="light"]{--bg:#fff;--fg:#222;--mut:#666;--ac:#c25e00;--line:#bbb;--sec:#eee;--cell:#fff;--yes:#15803d;--no:#b91c1c;--maybe:#a16207}
-:root[data-theme="dark"]{--bg:#000;--fg:#ddd;--mut:#999;--ac:#ff9a1f;--line:#333;--sec:#161616;--cell:#0c0c0c;--yes:#4ade80;--no:#f87171;--maybe:#facc15}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--fg)}
-h1{margin:0;font-size:1.6rem;color:var(--ac);font-weight:600}
-button{font:inherit;color:var(--fg);background:var(--cell);border:1px solid var(--line);border-radius:6px;padding:6px 12px;cursor:pointer}
-button:hover{border-color:var(--ac)}
-:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
-main{max-width:900px;margin:0 auto;padding:12px 16px 40px}
-.add{display:flex;gap:8px;margin:8px 0 14px;flex-wrap:wrap}
-.add input{flex:1;min-width:140px;font:inherit;color:var(--fg);background:var(--cell);border:1px solid var(--line);border-radius:6px;padding:8px 10px}
-.add button.primary{background:var(--ac);color:#000;border-color:var(--ac);font-weight:600}
-.hint{color:var(--mut);font-size:.9rem;margin:0 0 12px}
-.wrap{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
-table{border-collapse:collapse;width:100%}
-th,td{border:1px solid var(--line);padding:0;text-align:center}
-td.name,th.corner{position:sticky;left:0;background:var(--bg);text-align:left;padding:8px 10px;min-width:130px;z-index:1;font-weight:500}
-th.p{min-width:64px;background:var(--bg);vertical-align:bottom;padding:4px}
-th.p input{width:100%;min-width:56px;font:inherit;font-size:.85rem;text-align:center;color:var(--ac);background:transparent;border:0;border-bottom:1px dashed var(--line);padding:4px 2px}
-.mv{display:flex;justify-content:center;align-items:center;gap:2px}
-.mv button{border:0;background:none;color:var(--mut);padding:4px 8px;font-size:1rem;line-height:1}
-.mv .grip{cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;font-size:1.2rem}
-th.p.over{outline:2px solid var(--ac);outline-offset:-2px}
-th.p.drag{opacity:.5}
-th.p .x{display:block;margin:2px auto 0;border:0;background:none;color:var(--mut);font-size:.75rem;padding:2px 6px}
-tr.sec td{background:var(--sec);color:var(--ac);font-weight:700;text-align:left;padding:8px 10px;font-size:1.05rem}
-td.c{background:var(--cell);height:40px}
-td.c button{width:100%;height:40px;border:0;border-radius:0;background:transparent;font-size:1.2rem;font-weight:700}
-td.c button[data-s="1"]{color:var(--yes)}
-td.c button[data-s="2"]{color:var(--no)}
-td.c button[data-s="3"]{color:var(--maybe)}
-td.name.out{text-decoration:line-through;color:var(--mut)}
-.ed{font:inherit;color:var(--fg);background:var(--cell);border:1px solid var(--line);border-radius:6px;padding:8px 10px}
-.confirm{display:inline-flex;gap:8px;align-items:center;color:var(--fg)}
-.confirm[hidden]{display:none}
-.confirm .danger{background:var(--no);color:#000;border-color:var(--no);font-weight:600}
-.foot{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;color:var(--mut);font-size:.9rem;align-items:center}
-</style>
-</head>
-<body>
-<header><h1>Clue Detective Sheet</h1><button id="theme" aria-label="Toggle light or dark theme">Theme</button></header>
-<main>
-<div class="add">
-<select class="ed" id="ed" aria-label="Edition"><option value="classic">Clue Classic</option><option value="2016">Clue 2016-2022</option><option value="2023">Clue 2023</option><option value="master">Clue Master</option></select>
-<input id="pname" placeholder="Player name" maxlength="14" aria-label="Player name">
-<button class="primary" id="addbtn">Add player</button>
-</div>
-<p class="hint">Reorder players with the ◀ ▶ buttons, or drag the ⠿ handle onto another column. Tap a square to cycle: ✓ has it, ✗ doesn't, ? maybe, blank. Tap a name on the left to cross it off. Rename players in the column headers.</p>
-<div class="wrap"><table id="sheet"></table></div>
-<div class="foot"><button id="clear">Clear marks</button><button id="reset">New game</button><span class="confirm" id="conf" hidden>Remove all players and marks? <button class="danger" id="yes">Yes, new game</button><button id="no">Cancel</button></span><span id="count"></span></div>
-</main>
-<script>
-const ROOMS=["Ballroom","Billiard Room","Conservatory","Dining Room","Hall","Kitchen","Library","Lounge","Study"];
-const EDITIONS={
-classic:[["Who?",["Mr. Green","Colonel Mustard","Mrs. Peacock","Professor Plum","Miss Scarlett","Mrs. White"]],["What?",["Candlestick","Knife","Lead Pipe","Revolver","Rope","Wrench"]],["Where?",ROOMS]],
-"2016":[["Who?",["Reverend Green","Colonel Mustard","Mrs. Peacock","Professor Plum","Miss Scarlett","Mrs. White"]],["What?",["Candlestick","Dagger","Lead Pipe","Revolver","Rope","Wrench"]],["Where?",ROOMS]],
-"2023":[["Who?",["Green","Mustard","Peacock","Plum","Scarlett","White"]],["What?",["Candlestick","Dagger","Lead Pipe","Revolver","Rope","Wrench"]],["Where?",ROOMS]],
-master:[["Who?",["Mr. Green","Colonel Mustard","Mrs. Peacock","Professor Plum","Miss Scarlett","Mrs. White","Madame Rose","Sergeant Gray","Monsieur Brunette","Miss Peach"]],["What?",["Candlestick","Knife","Lead Pipe","Revolver","Rope","Wrench","Horseshoe","Poison"]],["Where?",ROOMS.concat(["Carriage House","Courtyard","Drawing Room","Fountain","Gazebo"])]]};
-const MARK=["","✓","✗","?"];
-const MAX=8;
-let st={players:[],marks:{},out:{},ed:"2023"};
-try{const s=localStorage.getItem("clue-sheet");if(s)st=Object.assign(st,JSON.parse(s))}catch(e){}
-try{const t=localStorage.getItem("clue-theme");if(t)document.documentElement.dataset.theme=t}catch(e){}
-function save(){try{localStorage.setItem("clue-sheet",JSON.stringify(st))}catch(e){}}
-function movePlayer(f,t){
-if(f===t||t<0||t>=st.players.length)return;
-const ni=n=>n===f?t:(f<t?(n>f&&n<=t?n-1:n):(n>=t&&n<f?n+1:n));
-st.players.splice(t,0,st.players.splice(f,1)[0]);
-const nm={};Object.keys(st.marks).forEach(k=>{const[a,b]=k.split("|");nm[a+"|"+ni(+b)]=st.marks[k]});
-st.marks=nm;save();render()}
-function render(){
-const t=document.getElementById("sheet");
-let h='<thead><tr><th class="corner">Clue</th>';
-st.players.forEach((p,i)=>{h+=`<th class="p" data-col="${i}"><div class="mv"><button data-mv="${i},-1" aria-label="Move ${p} left"${i===0?" disabled":""}>◀</button><span class="grip" data-grip="${i}" aria-hidden="true">⠿</span><button data-mv="${i},1" aria-label="Move ${p} right"${i===st.players.length-1?" disabled":""}>▶</button></div><input data-i="${i}" value="${p.replace(/"/g,"&quot;")}" aria-label="Player ${i+1} name"><button class="x" data-rm="${i}" aria-label="Remove ${p}">Remove</button></th>`});
-if(!st.players.length)h+='<th class="p" style="color:var(--mut);font-weight:400;padding:10px">Add a player above</th>';
-h+='</tr></thead><tbody>';
-const cols=Math.max(st.players.length,1);
-(EDITIONS[st.ed]||EDITIONS["2023"]).forEach(([sec,items])=>{
-h+=`<tr class="sec"><td colspan="${cols+1}">${sec}</td></tr>`;
-items.forEach(it=>{
-h+=`<tr><td class="name${st.out[it]?" out":""}" data-out="${it}" tabindex="0" role="button">${it}</td>`;
-if(!st.players.length)h+='<td class="c"></td>';
-st.players.forEach((_,i)=>{const k=it+"|"+i,v=st.marks[k]||0;
-h+=`<td class="c"><button data-k="${k}" data-s="${v}" aria-label="${it}, ${st.players[i]}: ${["blank","has it","doesn't have it","maybe"][v]}">${MARK[v]}</button></td>`});
-h+='</tr>'});
-});
-t.innerHTML=h+'</tbody>';
-document.getElementById("ed").value=st.ed;
-document.getElementById("count").textContent=st.players.length+" of "+MAX+" players";
-}
-function addPlayer(){
-const inp=document.getElementById("pname");let n=inp.value.trim();
-if(st.players.length>=MAX){inp.placeholder="Max "+MAX+" players";inp.value="";return}
-if(!n)n="Player "+(st.players.length+1);
-st.players.push(n);inp.value="";save();render();inp.focus();
-}
-document.getElementById("addbtn").onclick=addPlayer;
-document.getElementById("pname").onkeydown=e=>{if(e.key==="Enter")addPlayer()};
-const sheet=document.getElementById("sheet");
-sheet.addEventListener("click",e=>{
-const b=e.target.closest("[data-k]");
-if(b){const k=b.dataset.k;st.marks[k]=((st.marks[k]||0)+1)%4;b.dataset.s=st.marks[k];b.textContent=MARK[st.marks[k]];save();return}
-const o=e.target.closest("[data-out]");
-if(o){const k=o.dataset.out;st.out[k]=!st.out[k];o.classList.toggle("out",st.out[k]);save();return}
-const m=e.target.closest("[data-mv]");
-if(m){const[i,d]=m.dataset.mv.split(",").map(Number);movePlayer(i,i+d);return}
-const r=e.target.closest("[data-rm]");
-if(r){const i=+r.dataset.rm;st.players.splice(i,1);
-const nm={};Object.keys(st.marks).forEach(k=>{const[a,b]=k.split("|"),n=+b;if(n<i)nm[k]=st.marks[k];else if(n>i)nm[a+"|"+(n-1)]=st.marks[k]});
-st.marks=nm;save();render()}
-});
-sheet.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.dataset.out){e.preventDefault();e.target.click()}});
-sheet.addEventListener("input",e=>{const i=e.target.dataset.i;if(i!==undefined){st.players[+i]=e.target.value;save()}});
-document.getElementById("clear").onclick=()=>{st.marks={};st.out={};save();render()};
-const conf=document.getElementById("conf");
-document.getElementById("reset").onclick=()=>{conf.hidden=false};
-document.getElementById("no").onclick=()=>{conf.hidden=true};
-document.getElementById("yes").onclick=()=>{st={players:[],marks:{},out:{},ed:st.ed};conf.hidden=true;save();render()};
-document.getElementById("ed").onchange=e=>{st.ed=e.target.value;st.out={};save();render()};
-document.getElementById("theme").onclick=()=>{
-const r=document.documentElement,dark=getComputedStyle(r).getPropertyValue("--bg").trim()==="#000";
-r.dataset.theme=dark?"light":"dark";try{localStorage.setItem("clue-theme",r.dataset.theme)}catch(e){}};
-let dragFrom=null,dragTo=null;
-function colAt(x,y){const el=document.elementFromPoint(x,y);const th=el&&el.closest?el.closest("th.p[data-col]"):null;return th}
-sheet.addEventListener("pointerdown",e=>{const g=e.target.closest("[data-grip]");if(!g)return;
-dragFrom=+g.dataset.grip;dragTo=dragFrom;g.setPointerCapture(e.pointerId);
-const th=g.closest("th");th.classList.add("drag");e.preventDefault()});
-sheet.addEventListener("pointermove",e=>{if(dragFrom===null)return;
-const th=colAt(e.clientX,e.clientY);
-sheet.querySelectorAll("th.over").forEach(x=>x.classList.remove("over"));
-if(th){dragTo=+th.dataset.col;th.classList.add("over")}});
-function endDrag(){if(dragFrom===null)return;const f=dragFrom,t=dragTo;dragFrom=null;dragTo=null;
-sheet.querySelectorAll("th.over,th.drag").forEach(x=>x.classList.remove("over","drag"));
-if(t!==null&&t!==f)movePlayer(f,t)}
-sheet.addEventListener("pointerup",endDrag);
-sheet.addEventListener("pointercancel",endDrag);
-render();
-</script>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>Clue Detective Sheet</title>
+    <style>
+      :root {
+        --bg: #000;
+        --fg: #ddd;
+        --mut: #999;
+        --ac: #ff9a1f;
+        --line: #333;
+        --sec: #161616;
+        --cell: #0c0c0c;
+        --yes: #4ade80;
+        --no: #f87171;
+        --maybe: #facc15;
+        box-sizing: border-box;
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+      }
+      @media (prefers-color-scheme: light) {
+        :root:not([data-theme="dark"]) {
+          --bg: #fff;
+          --fg: #222;
+          --mut: #666;
+          --ac: #c25e00;
+          --line: #bbb;
+          --sec: #eee;
+          --cell: #fff;
+          --yes: #15803d;
+          --no: #b91c1c;
+          --maybe: #a16207;
+        }
+      }
+      :root[data-theme="light"] {
+        --bg: #fff;
+        --fg: #222;
+        --mut: #666;
+        --ac: #c25e00;
+        --line: #bbb;
+        --sec: #eee;
+        --cell: #fff;
+        --yes: #15803d;
+        --no: #b91c1c;
+        --maybe: #a16207;
+      }
+      :root[data-theme="dark"] {
+        --bg: #000;
+        --fg: #ddd;
+        --mut: #999;
+        --ac: #ff9a1f;
+        --line: #333;
+        --sec: #161616;
+        --cell: #0c0c0c;
+        --yes: #4ade80;
+        --no: #f87171;
+        --maybe: #facc15;
+      }
+      html {
+        scroll-padding-top: env(safe-area-inset-top, 0px);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font:
+          16px/1.5 system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--fg);
+      }
+      h1 {
+        margin: 0;
+        font-size: 1.6rem;
+        color: var(--ac);
+        font-weight: 600;
+      }
+      button {
+        font: inherit;
+        color: var(--fg);
+        background: var(--cell);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 6px 12px;
+        cursor: pointer;
+      }
+      button:hover {
+        border-color: var(--ac);
+      }
+      :focus-visible {
+        outline: 2px solid var(--ac);
+        outline-offset: 2px;
+      }
+      main {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 12px 16px 40px;
+      }
+      .add {
+        display: flex;
+        gap: 8px;
+        margin: 8px 0 14px;
+        flex-wrap: wrap;
+      }
+      .add input {
+        flex: 1;
+        min-width: 140px;
+        font: inherit;
+        color: var(--fg);
+        background: var(--cell);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 8px 10px;
+      }
+      .add button.primary {
+        background: var(--ac);
+        color: #000;
+        border-color: var(--ac);
+        font-weight: 600;
+      }
+      .hint {
+        color: var(--mut);
+        font-size: 0.9rem;
+        margin: 0 0 12px;
+      }
+      .wrap {
+        overflow-x: auto;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+      th,
+      td {
+        border: 1px solid var(--line);
+        padding: 0;
+        text-align: center;
+      }
+      td.name,
+      th.corner {
+        position: sticky;
+        left: 0;
+        background: var(--bg);
+        text-align: left;
+        padding: 8px 10px;
+        min-width: 130px;
+        z-index: 1;
+        font-weight: 500;
+      }
+      th.p {
+        min-width: 64px;
+        background: var(--bg);
+        vertical-align: bottom;
+        padding: 4px;
+      }
+      th.p input {
+        width: 100%;
+        min-width: 56px;
+        font: inherit;
+        font-size: 0.85rem;
+        text-align: center;
+        color: var(--ac);
+        background: transparent;
+        border: 0;
+        border-bottom: 1px dashed var(--line);
+        padding: 4px 2px;
+      }
+      .mv {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 2px;
+      }
+      .mv button {
+        border: 0;
+        background: none;
+        color: var(--mut);
+        padding: 4px 8px;
+        font-size: 1rem;
+        line-height: 1;
+      }
+      .mv .grip {
+        cursor: grab;
+        touch-action: none;
+        user-select: none;
+        -webkit-user-select: none;
+        font-size: 1.2rem;
+      }
+      th.p.over {
+        outline: 2px solid var(--ac);
+        outline-offset: -2px;
+      }
+      th.p.drag {
+        opacity: 0.5;
+      }
+      th.p .x {
+        display: block;
+        margin: 2px auto 0;
+        border: 0;
+        background: none;
+        color: var(--mut);
+        font-size: 0.75rem;
+        padding: 2px 6px;
+      }
+      tr.sec td {
+        background: var(--sec);
+        color: var(--ac);
+        font-weight: 700;
+        text-align: left;
+        padding: 8px 10px;
+        font-size: 1.05rem;
+      }
+      td.c {
+        background: var(--cell);
+        height: 40px;
+      }
+      td.c button {
+        width: 100%;
+        height: 40px;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        font-size: 1.2rem;
+        font-weight: 700;
+      }
+      td.c button[data-s="1"] {
+        color: var(--yes);
+      }
+      td.c button[data-s="2"] {
+        color: var(--no);
+      }
+      td.c button[data-s="3"] {
+        color: var(--maybe);
+      }
+      td.name.out {
+        text-decoration: line-through;
+        color: var(--mut);
+      }
+      .ed {
+        font: inherit;
+        color: var(--fg);
+        background: var(--cell);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 8px 10px;
+      }
+      .confirm {
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+        color: var(--fg);
+      }
+      .confirm[hidden] {
+        display: none;
+      }
+      .confirm .danger {
+        background: var(--no);
+        color: #000;
+        border-color: var(--no);
+        font-weight: 600;
+      }
+      .foot {
+        display: flex;
+        gap: 8px;
+        margin-top: 14px;
+        flex-wrap: wrap;
+        color: var(--mut);
+        font-size: 0.9rem;
+        align-items: center;
+      }
+      /* Freeze the player header when scrolling vertically */
+      #sheet thead th {
+        position: sticky;
+        top: 0;
+        background: var(--bg);
+        z-index: 10;
+      }
+
+      /* Keep the top-left Clue header above the other headers */
+      #sheet thead th.corner {
+        left: 0;
+        z-index: 12;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Clue Detective Sheet</h1>
+      <button id="theme" aria-label="Toggle light or dark theme">Theme</button>
+    </header>
+    <main>
+      <div class="add">
+        <select class="ed" id="ed" aria-label="Edition">
+          <option value="classic">Clue Classic</option>
+          <option value="2016">Clue 2016-2022</option>
+          <option value="2023">Clue 2023</option>
+          <option value="master">Clue Master</option>
+        </select>
+        <input
+          id="pname"
+          placeholder="Player name"
+          maxlength="14"
+          aria-label="Player name"
+        />
+        <button class="primary" id="addbtn">Add player</button>
+      </div>
+      <p class="hint">
+        Reorder players with the ◀ ▶ buttons, or drag the ⠿ handle onto another
+        column. Tap a square to cycle: ✓ has it, ✗ doesn't, ? maybe, blank. Tap
+        a name on the left to cross it off. Rename players in the column
+        headers.
+      </p>
+      <div class="wrap"><table id="sheet"></table></div>
+      <div class="foot">
+        <button id="clear">Clear marks</button
+        ><button id="reset">New game</button
+        ><span class="confirm" id="conf" hidden
+          >Remove all players and marks?
+          <button class="danger" id="yes">Yes, new game</button
+          ><button id="no">Cancel</button></span
+        ><span id="count"></span>
+      </div>
+    </main>
+    <script>
+      const ROOMS = [
+        "Ballroom",
+        "Billiard Room",
+        "Conservatory",
+        "Dining Room",
+        "Hall",
+        "Kitchen",
+        "Library",
+        "Lounge",
+        "Study",
+      ];
+      const EDITIONS = {
+        classic: [
+          [
+            "Who?",
+            [
+              "Mr. Green",
+              "Colonel Mustard",
+              "Mrs. Peacock",
+              "Professor Plum",
+              "Miss Scarlett",
+              "Mrs. White",
+            ],
+          ],
+          [
+            "What?",
+            ["Candlestick", "Knife", "Lead Pipe", "Revolver", "Rope", "Wrench"],
+          ],
+          ["Where?", ROOMS],
+        ],
+        2016: [
+          [
+            "Who?",
+            [
+              "Reverend Green",
+              "Colonel Mustard",
+              "Mrs. Peacock",
+              "Professor Plum",
+              "Miss Scarlett",
+              "Mrs. White",
+            ],
+          ],
+          [
+            "What?",
+            [
+              "Candlestick",
+              "Dagger",
+              "Lead Pipe",
+              "Revolver",
+              "Rope",
+              "Wrench",
+            ],
+          ],
+          ["Where?", ROOMS],
+        ],
+        2023: [
+          [
+            "Who?",
+            ["Green", "Mustard", "Peacock", "Plum", "Scarlett", "White"],
+          ],
+          [
+            "What?",
+            [
+              "Candlestick",
+              "Dagger",
+              "Lead Pipe",
+              "Revolver",
+              "Rope",
+              "Wrench",
+            ],
+          ],
+          ["Where?", ROOMS],
+        ],
+        master: [
+          [
+            "Who?",
+            [
+              "Mr. Green",
+              "Colonel Mustard",
+              "Mrs. Peacock",
+              "Professor Plum",
+              "Miss Scarlett",
+              "Mrs. White",
+              "Madame Rose",
+              "Sergeant Gray",
+              "Monsieur Brunette",
+              "Miss Peach",
+            ],
+          ],
+          [
+            "What?",
+            [
+              "Candlestick",
+              "Knife",
+              "Lead Pipe",
+              "Revolver",
+              "Rope",
+              "Wrench",
+              "Horseshoe",
+              "Poison",
+            ],
+          ],
+          [
+            "Where?",
+            ROOMS.concat([
+              "Carriage House",
+              "Courtyard",
+              "Drawing Room",
+              "Fountain",
+              "Gazebo",
+            ]),
+          ],
+        ],
+      };
+      const MARK = ["", "✓", "✗", "?"];
+      const MAX = 8;
+      let st = { players: [], marks: {}, out: {}, ed: "2023" };
+      try {
+        const s = localStorage.getItem("clue-sheet");
+        if (s) st = Object.assign(st, JSON.parse(s));
+      } catch (e) {}
+      try {
+        const t = localStorage.getItem("clue-theme");
+        if (t) document.documentElement.dataset.theme = t;
+      } catch (e) {}
+      function save() {
+        try {
+          localStorage.setItem("clue-sheet", JSON.stringify(st));
+        } catch (e) {}
+      }
+      function movePlayer(f, t) {
+        if (f === t || t < 0 || t >= st.players.length) return;
+        const ni = (n) =>
+          n === f
+            ? t
+            : f < t
+              ? n > f && n <= t
+                ? n - 1
+                : n
+              : n >= t && n < f
+                ? n + 1
+                : n;
+        st.players.splice(t, 0, st.players.splice(f, 1)[0]);
+        const nm = {};
+        Object.keys(st.marks).forEach((k) => {
+          const [a, b] = k.split("|");
+          nm[a + "|" + ni(+b)] = st.marks[k];
+        });
+        st.marks = nm;
+        save();
+        render();
+      }
+      function render() {
+        const t = document.getElementById("sheet");
+        let h = '<thead><tr><th class="corner">Clue</th>';
+        st.players.forEach((p, i) => {
+          h += `<th class="p" data-col="${i}"><div class="mv"><button data-mv="${i},-1" aria-label="Move ${p} left"${i === 0 ? " disabled" : ""}>◀</button><span class="grip" data-grip="${i}" aria-hidden="true">⠿</span><button data-mv="${i},1" aria-label="Move ${p} right"${i === st.players.length - 1 ? " disabled" : ""}>▶</button></div><input data-i="${i}" value="${p.replace(/"/g, "&quot;")}" aria-label="Player ${i + 1} name"><button class="x" data-rm="${i}" aria-label="Remove ${p}">Remove</button></th>`;
+        });
+        if (!st.players.length)
+          h +=
+            '<th class="p" style="color:var(--mut);font-weight:400;padding:10px">Add a player above</th>';
+        h += "</tr></thead><tbody>";
+        const cols = Math.max(st.players.length, 1);
+        (EDITIONS[st.ed] || EDITIONS["2023"]).forEach(([sec, items]) => {
+          h += `<tr class="sec"><td colspan="${cols + 1}">${sec}</td></tr>`;
+          items.forEach((it) => {
+            h += `<tr><td class="name${st.out[it] ? " out" : ""}" data-out="${it}" tabindex="0" role="button">${it}</td>`;
+            if (!st.players.length) h += '<td class="c"></td>';
+            st.players.forEach((_, i) => {
+              const k = it + "|" + i,
+                v = st.marks[k] || 0;
+              h += `<td class="c"><button data-k="${k}" data-s="${v}" aria-label="${it}, ${st.players[i]}: ${["blank", "has it", "doesn't have it", "maybe"][v]}">${MARK[v]}</button></td>`;
+            });
+            h += "</tr>";
+          });
+        });
+        t.innerHTML = h + "</tbody>";
+        document.getElementById("ed").value = st.ed;
+        document.getElementById("count").textContent =
+          st.players.length + " of " + MAX + " players";
+      }
+      function addPlayer() {
+        const inp = document.getElementById("pname");
+        let n = inp.value.trim();
+        if (st.players.length >= MAX) {
+          inp.placeholder = "Max " + MAX + " players";
+          inp.value = "";
+          return;
+        }
+        if (!n) n = "Player " + (st.players.length + 1);
+        st.players.push(n);
+        inp.value = "";
+        save();
+        render();
+        inp.focus();
+      }
+      document.getElementById("addbtn").onclick = addPlayer;
+      document.getElementById("pname").onkeydown = (e) => {
+        if (e.key === "Enter") addPlayer();
+      };
+      const sheet = document.getElementById("sheet");
+      sheet.addEventListener("click", (e) => {
+        const b = e.target.closest("[data-k]");
+        if (b) {
+          const k = b.dataset.k;
+          st.marks[k] = ((st.marks[k] || 0) + 1) % 4;
+          b.dataset.s = st.marks[k];
+          b.textContent = MARK[st.marks[k]];
+          save();
+          return;
+        }
+        const o = e.target.closest("[data-out]");
+        if (o) {
+          const k = o.dataset.out;
+          st.out[k] = !st.out[k];
+          o.classList.toggle("out", st.out[k]);
+          save();
+          return;
+        }
+        const m = e.target.closest("[data-mv]");
+        if (m) {
+          const [i, d] = m.dataset.mv.split(",").map(Number);
+          movePlayer(i, i + d);
+          return;
+        }
+        const r = e.target.closest("[data-rm]");
+        if (r) {
+          const i = +r.dataset.rm;
+          st.players.splice(i, 1);
+          const nm = {};
+          Object.keys(st.marks).forEach((k) => {
+            const [a, b] = k.split("|"),
+              n = +b;
+            if (n < i) nm[k] = st.marks[k];
+            else if (n > i) nm[a + "|" + (n - 1)] = st.marks[k];
+          });
+          st.marks = nm;
+          save();
+          render();
+        }
+      });
+      sheet.addEventListener("keydown", (e) => {
+        if ((e.key === "Enter" || e.key === " ") && e.target.dataset.out) {
+          e.preventDefault();
+          e.target.click();
+        }
+      });
+      sheet.addEventListener("input", (e) => {
+        const i = e.target.dataset.i;
+        if (i !== undefined) {
+          st.players[+i] = e.target.value;
+          save();
+        }
+      });
+      document.getElementById("clear").onclick = () => {
+        st.marks = {};
+        st.out = {};
+        save();
+        render();
+      };
+      const conf = document.getElementById("conf");
+      document.getElementById("reset").onclick = () => {
+        conf.hidden = false;
+      };
+      document.getElementById("no").onclick = () => {
+        conf.hidden = true;
+      };
+      document.getElementById("yes").onclick = () => {
+        st = { players: [], marks: {}, out: {}, ed: st.ed };
+        conf.hidden = true;
+        save();
+        render();
+      };
+      document.getElementById("ed").onchange = (e) => {
+        st.ed = e.target.value;
+        st.out = {};
+        save();
+        render();
+      };
+      document.getElementById("theme").onclick = () => {
+        const r = document.documentElement,
+          dark = getComputedStyle(r).getPropertyValue("--bg").trim() === "#000";
+        r.dataset.theme = dark ? "light" : "dark";
+        try {
+          localStorage.setItem("clue-theme", r.dataset.theme);
+        } catch (e) {}
+      };
+      let dragFrom = null,
+        dragTo = null;
+      function colAt(x, y) {
+        const el = document.elementFromPoint(x, y);
+        const th = el && el.closest ? el.closest("th.p[data-col]") : null;
+        return th;
+      }
+      sheet.addEventListener("pointerdown", (e) => {
+        const g = e.target.closest("[data-grip]");
+        if (!g) return;
+        dragFrom = +g.dataset.grip;
+        dragTo = dragFrom;
+        g.setPointerCapture(e.pointerId);
+        const th = g.closest("th");
+        th.classList.add("drag");
+        e.preventDefault();
+      });
+      sheet.addEventListener("pointermove", (e) => {
+        if (dragFrom === null) return;
+        const th = colAt(e.clientX, e.clientY);
+        sheet
+          .querySelectorAll("th.over")
+          .forEach((x) => x.classList.remove("over"));
+        if (th) {
+          dragTo = +th.dataset.col;
+          th.classList.add("over");
+        }
+      });
+      function endDrag() {
+        if (dragFrom === null) return;
+        const f = dragFrom,
+          t = dragTo;
+        dragFrom = null;
+        dragTo = null;
+        sheet
+          .querySelectorAll("th.over,th.drag")
+          .forEach((x) => x.classList.remove("over", "drag"));
+        if (t !== null && t !== f) movePlayer(f, t);
+      }
+      sheet.addEventListener("pointerup", endDrag);
+      sheet.addEventListener("pointercancel", endDrag);
+      render();
+    </script>
+  </body>
 </html>
