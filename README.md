@@ -46,9 +46,20 @@ Saved progress may not persist between visits when a page is opened from a local
    - **Android (Chrome):** tap the **⋮** menu, then **Add to Home screen** (or **Install app**), then confirm.
 4. Open it from the new icon. It runs full screen like an app, and your progress is saved in that browser on your phone.
 
-### Hosting it yourself
+### Hosting it on GitHub Pages
 
-Because it is one static file, you can host it anywhere that serves HTML, such as GitHub Pages, Netlify or any web server. 
+This repository is ready for GitHub Pages: the app is `index.html` at the repo root, and `.nojekyll` tells GitHub to serve the files as they are.
+
+1. Create a new **public** repository on GitHub. As far as I know, free accounts can only use Pages on public repositories.
+2. Upload `index.html`, `README.md` and `.nojekyll` to the root of the repository (**Add file → Upload files**), then commit.
+3. Go to **Settings → Pages**.
+4. Under **Build and deployment**, set **Source** to **Deploy from a branch**, choose the `main` branch and the `/ (root)` folder, then click **Save**.
+5. Wait a minute or two. The site will be at `https://<your-username>.github.io/<repo-name>/`.
+6. Open that address on your phone and use **Add to Home Screen** (see "Using it on your phone" above).
+
+To update the app later, replace `index.html` in the repository and commit. The site redeploys automatically.
+
+You can also host the file on any other static host, such as Netlify or any web server.
 
 ## Usage
 
