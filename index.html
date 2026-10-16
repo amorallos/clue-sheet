@@ -138,6 +138,10 @@
         color: var(--mut);
         font-size: 0.9rem;
         margin: 0 0 12px;
+        padding: 12px 14px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: var(--sec);
       }
       .wrap {
         overflow-x: auto;
@@ -147,6 +151,13 @@
       table {
         border-collapse: collapse;
         width: 100%;
+      }
+      #sheet thead {
+        position: relative;
+        z-index: 3;
+        background: var(--bg);
+        transform: translateY(var(--player-header-offset, 0px));
+        box-shadow: 0 1px 0 var(--line);
       }
       th,
       td {
@@ -277,34 +288,22 @@
         border-color: var(--no);
         font-weight: 600;
       }
-      .foot {
+      .actions {
         display: flex;
         gap: 8px;
-        margin-top: 14px;
+        margin: 0 0 14px;
         flex-wrap: wrap;
         color: var(--mut);
         font-size: 0.9rem;
         align-items: center;
       }
-      /* Freeze the player header when scrolling vertically */
-      #sheet thead th {
-        position: sticky;
-        top: 0;
-        background: var(--bg);
-        z-index: 10;
-      }
-
-      /* Keep the top-left Clue header above the other headers */
-      #sheet thead th.corner {
-        left: 0;
-        z-index: 12;
-      }
+      
     </style>
   </head>
   <body>
     <header>
       <h1>Clue Detective Sheet</h1>
-      <button id="theme" aria-label="Toggle light or dark theme">Theme</button>
+      <button id="theme" aria-label="Switch to light theme" title="Switch to light theme">☀️</button>
     </header>
     <main>
       <div class="add">
@@ -322,14 +321,7 @@
         />
         <button class="primary" id="addbtn">Add player</button>
       </div>
-      <p class="hint">
-        Reorder players with the ◀ ▶ buttons, or drag the ⠿ handle onto another
-        column. Tap a square to cycle: ✓ has it, ✗ doesn't, ? maybe, blank. Tap
-        a name on the left to cross it off. Rename players in the column
-        headers.
-      </p>
-      <div class="wrap"><table id="sheet"></table></div>
-      <div class="foot">
+      <div class="actions">
         <button id="clear">Clear marks</button
         ><button id="reset">New game</button
         ><span class="confirm" id="conf" hidden
@@ -338,6 +330,13 @@
           ><button id="no">Cancel</button></span
         ><span id="count"></span>
       </div>
+      <p class="hint">
+        Reorder players with the ◀ ▶ buttons, or drag the ⠿ handle onto another
+        column. Tap a square to cycle: ✓ has it, ✗ doesn't, ? maybe, blank. Tap
+        a name on the left to cross it off. Rename players in the column
+        headers.
+      </p>
+      <div class="wrap"><table id="sheet"></table></div>
     </main>
     <script>
       const ROOMS = [
@@ -517,6 +516,7 @@
           });
         });
         t.innerHTML = h + "</tbody>";
+        schedulePlayerHeader();
         document.getElementById("ed").value = st.ed;
         document.getElementById("count").textContent =
           st.players.length + " of " + MAX + " players";
@@ -541,6 +541,29 @@
         if (e.key === "Enter") addPlayer();
       };
       const sheet = document.getElementById("sheet");
+      // The horizontal overflow wrapper prevents CSS sticky from following
+      // page scroll. Move the real header so its controls and columns stay aligned.
+      let playerHeaderFrame = 0;
+      function schedulePlayerHeader() {
+        if (playerHeaderFrame) return;
+        playerHeaderFrame = requestAnimationFrame(() => {
+          playerHeaderFrame = 0;
+          const head = sheet.tHead;
+          if (!head) return;
+          const bounds = sheet.getBoundingClientRect();
+          const safeTop = parseFloat(getComputedStyle(document.documentElement).paddingTop) || 0;
+          const offset = Math.min(
+            Math.max(0, safeTop - bounds.top),
+            Math.max(0, bounds.height - head.offsetHeight),
+          );
+          sheet.style.setProperty("--player-header-offset", offset + "px");
+        });
+      }
+      window.addEventListener("scroll", schedulePlayerHeader, { passive: true });
+      window.addEventListener("resize", schedulePlayerHeader);
+      if (typeof ResizeObserver !== "undefined") {
+        new ResizeObserver(schedulePlayerHeader).observe(sheet);
+      }
       sheet.addEventListener("click", (e) => {
         const b = e.target.closest("[data-k]");
         if (b) {
@@ -619,10 +642,23 @@
         save();
         render();
       };
-      document.getElementById("theme").onclick = () => {
+      const themeButton = document.getElementById("theme");
+      function updateThemeButton() {
+        const dark = getComputedStyle(document.documentElement)
+          .getPropertyValue("--bg").trim() === "#000";
+        const label = dark ? "Switch to light theme" : "Switch to dark theme";
+        themeButton.textContent = dark ? "☀️" : "🌙";
+        themeButton.setAttribute("aria-label", label);
+        themeButton.title = label;
+      }
+      updateThemeButton();
+      window.matchMedia("(prefers-color-scheme: light)")
+        .addEventListener("change", updateThemeButton);
+      themeButton.onclick = () => {
         const r = document.documentElement,
           dark = getComputedStyle(r).getPropertyValue("--bg").trim() === "#000";
         r.dataset.theme = dark ? "light" : "dark";
+        updateThemeButton();
         try {
           localStorage.setItem("clue-theme", r.dataset.theme);
         } catch (e) {}
